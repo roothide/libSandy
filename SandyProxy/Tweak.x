@@ -3,7 +3,7 @@
 #import <dlfcn.h>
 #import "substrate.h"
 #import <xpc/xpc.h>
-#import <libroot.h>
+#import <roothide.h>
 #import <sandbox_private.h>
 #import <ptrauth.h>
 #import "../libSandy_private.h"
@@ -12,7 +12,7 @@ int64_t (*_xpc_interface_routine)(int msgid, xpc_object_t xmsg, xpc_object_t *xr
 
 void consumeSandydGlobalExtensions(void)
 {
-	NSString *plistPath = JBROOT_PATH_NSSTRING(@"/usr/lib/sandyd_global.plist");
+	NSString *plistPath = jbroot(@"/usr/lib/sandyd_global.plist");
 	if (!plistPath) return;
 	NSDictionary *plistDict = [NSDictionary dictionaryWithContentsOfFile:plistPath];
 	if (!plistDict) return;

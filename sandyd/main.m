@@ -5,7 +5,7 @@
 #import <xpc/xpc.h>
 #import <dlfcn.h>
 #import <HBLogWeak.h>
-#import <libroot.h>
+#import <roothide.h>
 #import <sandbox_private.h>
 #import <sandyd.h>
 #import "sandbox_compat.h"
@@ -32,7 +32,7 @@ NSString *resolveCaller(xpc_object_t sourceConnection, audit_token_t *auditToken
 
 void createExtensionPlist(void)
 {
-	NSString *targetPath = JBROOT_PATH_NSSTRING(@"/usr/lib/sandyd_global.plist");
+	NSString *targetPath = jbroot(@"/usr/lib/sandyd_global.plist");
 	NSMutableArray *extensions = [NSMutableArray new];
 
 	char *extension = NULL;
@@ -76,7 +76,7 @@ NSString *issueExtension(NSDictionary *extensionDict, audit_token_t auditToken)
 	if (!typeOfExtension) return nil;
 
 	if ([typeOfExtension isEqualToString:@"file"]) {
-		NSString *path = extensionDict[@"path"];
+		NSString *path = jbroot(extensionDict[@"path"]);
 		outToken = compat_sandbox_extension_issue_file_to_process(extensionClass.UTF8String, path.UTF8String, 0, auditToken);
 	} else if ([typeOfExtension isEqualToString:@"generic"]) {
 		outToken = compat_sandbox_extension_issue_generic_to_process(extensionClass.UTF8String, 0, auditToken);
@@ -132,7 +132,7 @@ xpc_object_t getProcessExtensions(NSString *callerIdentifier, audit_token_t audi
 	HBLogDebugWeak(@"[libSandySupport getProcessExtensions] callerIdentifier=%@ profileName=%s", callerIdentifier, profileName);
 
 	__block xpc_object_t extensionArray = xpc_array_create(NULL, 0);
-	NSURL *profileRootURL = [NSURL fileURLWithPath:JBROOT_PATH_NSSTRING(@"/Library/libSandy") isDirectory:YES];
+	NSURL *profileRootURL = [NSURL fileURLWithPath:jbroot(@"/Library/libSandy") isDirectory:YES];
 	NSURL *profileURL = [NSURL fileURLWithPath:[[NSString stringWithUTF8String:profileName].lastPathComponent stringByAppendingString:@".plist"] isDirectory:NO relativeToURL:profileRootURL];
 
 	struct stat info;
@@ -199,7 +199,7 @@ NSArray *getActiveProfiles(NSString *callerIdentifier)
 {
 	NSMutableArray *profiles = [NSMutableArray new];
 
-	NSURL *profileRootURL = [NSURL fileURLWithPath:JBROOT_PATH_NSSTRING(@"/Library/libSandy") isDirectory:YES];
+	NSURL *profileRootURL = [NSURL fileURLWithPath:jbroot(@"/Library/libSandy") isDirectory:YES];
 	for (NSURL *profileURL in [[NSFileManager defaultManager] contentsOfDirectoryAtURL:profileRootURL includingPropertiesForKeys:nil options:0 error:nil]) {
 		NSDictionary *profileDict;
 		if (@available(iOS 11, *)) {

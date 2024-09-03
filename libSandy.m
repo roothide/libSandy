@@ -3,7 +3,7 @@
 #import <xpc/xpc.h>
 #import <mach-o/dyld.h>
 #import <sandbox_private.h>
-#import <libroot.h>
+#import <roothide.h>
 #import <sandyd.h>
 #import <substrate.h>
 #import "HBLogWeak.h"
@@ -55,7 +55,7 @@ static BOOL sandydCommunicationWorks(void)
 bool consumeSandydGlobalExtensions(void)
 {
 	if (!sandydCommunicationWorks()) {
-		NSString *plistPath = JBROOT_PATH_NSSTRING(@"/usr/lib/sandyd_global.plist");
+		NSString *plistPath = jbroot(@"/usr/lib/sandyd_global.plist");
 		if (![[NSFileManager defaultManager] fileExistsAtPath:plistPath]) {
 			NSLog(@"[libSandy consumeSandydGlobalExtensions] FATAL ERROR: %@ does not exist", plistPath);
 			return NO;
