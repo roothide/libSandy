@@ -81,11 +81,26 @@ void _xpc_connection_set_event_handler(xpc_connection_t connection, xpc_handler_
 	__xpc_connection_set_event_handler(connection, handler);
 }
 
+/*
+libhooker's MSFindSymbol doesn't sign function pointers at all, 
+while rootless/ellekit's MSFindSymbol signs only all exported symbols(even data pointers). 
+the new roothide/ellekit implements signing only all code pointers (whether exported or private).
+this helper function is compatible with all of these.
+*/
+static void* FindAndSignFunction(MSImageRef image, const char *name)
+{
+	void* symbol = MSFindSymbol(image, name);
+	if (!symbol) {
+		return NULL;
+	}
+	return ptrauth_sign_unauthenticated(ptrauth_strip(symbol, ptrauth_key_function_pointer), ptrauth_key_function_pointer, 0);
+}
+
 %ctor
 {
 	if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_16_0) {
 		MSImageRef xpcImage = MSGetImageByName("/usr/lib/system/libxpc.dylib");
-		_xpc_interface_routine = ptrauth_sign_unauthenticated(MSFindSymbol(xpcImage, "__xpc_interface_routine"), ptrauth_key_function_pointer, 0);
+		_xpc_interface_routine = FindAndSignFunction(xpcImage, "__xpc_interface_routine");
 		MSHookFunction((void *)&xpc_connection_set_event_handler, (void *)_xpc_connection_set_event_handler, (void **)&__xpc_connection_set_event_handler);
 	}
 }
